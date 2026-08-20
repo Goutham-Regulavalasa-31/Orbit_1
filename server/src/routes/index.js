@@ -1,5 +1,6 @@
 import { Router } from "express";
 import authRouter from "./auth.routes.js";
+import postsRouter from "./post.routes.js";
 
 /**
  * Root API router.
@@ -9,9 +10,9 @@ import authRouter from "./auth.routes.js";
 const router = Router();
 
 router.use("/auth", authRouter);
+router.use("/posts", postsRouter);
 
 // Future routers will be mounted here:
-// router.use("/posts", postsRouter);
 // router.use("/clubs", clubsRouter);
 // router.use("/events", eventsRouter);
 
