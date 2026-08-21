@@ -50,8 +50,13 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Only intercept 401s that haven't already been retried
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // PREVENT INFINITE LOOPS: Do not intercept 401s on login/register/refresh endpoints
+    const isAuthRoute = originalRequest.url?.includes("/auth/login") || 
+                        originalRequest.url?.includes("/auth/register") || 
+                        originalRequest.url?.includes("/auth/refresh-token");
+
+    // Only intercept 401s that haven't already been retried AND aren't auth routes
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
       if (isRefreshing) {
         // Queue the request while a refresh is already in flight
         return new Promise((resolve, reject) => {
