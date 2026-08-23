@@ -1,35 +1,34 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
+import ProfilePage from "@/pages/profile/ProfilePage";
+import useAuthStore from "@/store/useAuthStore";
+import useSocketStore from "@/store/useSocketStore";
 
-/**
- * Root application component.
- * Defines the client-side route tree:
- *  - /login       → public
- *  - /register    → public
- *  - /dashboard   → protected (requires authentication)
- *  - /*           → redirects to /login
- */
 const App = () => {
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const connectSocket = useSocketStore((s) => s.connect);
+
+  // FIX: Only attempt to connect when a token exists.
+  useEffect(() => {
+    if (accessToken) {
+      connectSocket(accessToken);
+    }
+  }, [accessToken, connectSocket]);
+
   return (
     <Routes>
-      {/* ── Public routes ──────────────────────────────────────────── */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-
-      {/* ── Protected routes (auth wall) ──────────────────────────── */}
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
-        {/* Future protected routes will be nested here */}
+        <Route path="/profile/:userId" element={<ProfilePage />} />
       </Route>
-
-      {/* ── Catch-all: redirect to login ──────────────────────────── */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 };
-
 export default App;

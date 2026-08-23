@@ -2,6 +2,9 @@ import "dotenv/config";
 import app from "./src/app.js";
 import connectDB from "./src/config/db.js";
 
+// CRITICAL FIX 1: Import the socket initialization function
+import { initIO } from "./src/socket/socket.js";
+
 const PORT = process.env.PORT ?? 5000;
 
 // ── Boot sequence: connect DB first, then start HTTP server ──────────────
@@ -13,6 +16,9 @@ connectDB()
       );
       console.log(`📋  Environment: ${process.env.NODE_ENV ?? "development"}`);
     });
+
+    // CRITICAL FIX 2: Actually turn the WebSocket engine on!
+    initIO(server);
 
     // Graceful shutdown
     const shutdown = (signal) => {

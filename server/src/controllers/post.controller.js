@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import * as postService from "../services/post.service.js";
+import { emitToPost } from "../socket/socket.js";
 
 // ── Validation constants ──────────────────────────────────────────────────────
 const VALID_POST_TYPES = new Set(["general", "note", "doubt"]);
@@ -138,6 +139,19 @@ export const toggleLike = asyncHandler(async (req, res) => {
     postId: req.params.id,
     userId: req.user._id.toString(),
   });
+
+  // ── Broadcast real-time update to all clients watching this post ─────────
+  // emitToPost is safe to call even when no clients are in the room.
+  try {
+    emitToPost(req.params.id, "post_liked", {
+      postId:     req.params.id,
+      likesCount: result.likesCount,
+      liked:      result.liked,
+      userId:     req.user._id.toString(),
+    });
+  } catch {
+    // Socket.io may not be initialized in test environments — do not fail the HTTP response
+  }
 
   const message = result.liked ? "Post liked" : "Post unliked";
 

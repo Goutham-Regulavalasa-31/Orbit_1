@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import useAuthStore from "@/store/useAuthStore";
 import { useLogout } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 /**
  * Top navigation bar for authenticated pages.
@@ -38,8 +39,14 @@ const Navbar = () => {
         {/* ── Right side: user info + logout ────────────────────────── */}
         {user && (
           <div className="flex items-center gap-3">
+            {/* Notification bell */}
+            <NotificationBell />
+
             {/* User pill */}
-            <div className="hidden sm:flex items-center gap-2.5 rounded-lg border border-border/40 bg-muted/30 px-3 py-1.5">
+            <Link
+              to={`/profile/${user._id}`}
+              className="hidden sm:flex items-center gap-2.5 rounded-lg border border-border/40 bg-muted/30 px-3 py-1.5 transition-colors hover:bg-muted/50"
+            >
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 ring-1 ring-primary/30">
                 {user.avatar ? (
                   <img
@@ -59,7 +66,7 @@ const Navbar = () => {
                   {user.department || user.role}
                 </span>
               </div>
-            </div>
+            </Link>
 
             {/* Logout button */}
             <button
