@@ -161,6 +161,25 @@ export const toggleLike = asyncHandler(async (req, res) => {
 });
 
 /**
+ * POST /api/v1/posts/:id/summarize
+ * Protected — requires valid access token.
+ * Notes only. Serves a cached summary (see AI_SUMMARY_TTL_MS in
+ * post.service.js) unless ?refresh=true forces regeneration.
+ */
+export const summarizePost = asyncHandler(async (req, res) => {
+  const forceRefresh = req.query.refresh === "true";
+
+  const data = await postService.summarizePost({
+    postId: req.params.id,
+    forceRefresh,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, data, data.cached ? "Summary retrieved from cache" : "Summary generated successfully"));
+});
+
+/**
  * DELETE /api/v1/posts/:id
  * Protected — requires valid access token.
  * Only the post author or an admin can delete a post.

@@ -1,5 +1,17 @@
 import mongoose, { Schema } from "mongoose";
 
+// Single-nested (not array) subdocument — {_id:false} keeps it a plain
+// value object instead of getting its own auto-generated ObjectId.
+const aiSummarySchema = new Schema(
+  {
+    summary: { type: String, default: "" },
+    keyPoints: { type: [String], default: [] },
+    studyQuestions: { type: [String], default: [] },
+    generatedAt: { type: Date, default: null },
+  },
+  { _id: false }
+);
+
 /**
  * Post Schema — the core content unit for the Orbit social feed.
  *
@@ -77,6 +89,13 @@ const postSchema = new Schema(
         validator: (arr) => arr.length <= 10,
         message: "A post can have at most 10 tags",
       },
+    },
+
+    // Cached AI-generated study summary (notes only). Regenerated on demand
+    // once stale — see post.service.js's summarizePost / AI_SUMMARY_TTL_MS.
+    aiSummary: {
+      type: aiSummarySchema,
+      default: null,
     },
   },
   {

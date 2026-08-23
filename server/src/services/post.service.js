@@ -4,6 +4,10 @@ import { ApiError } from "../utils/ApiError.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import { emitToPost } from "../socket/socket.js";
 import { notifyUser } from "./notification.service.js";
+import { generateStudySummary } from "./ai.service.js";
+
+const AI_SUMMARY_TTL_MS = 24 * 60 * 60 * 1000; // 24h before a cached summary is considered stale
+const MIN_SUMMARIZABLE_LENGTH = 20;
 
 const buildEnrichmentPipeline = (userId) => [
   {
@@ -112,6 +116,40 @@ export const toggleLike = async ({ postId, userId }) => {
   }
 
   return { liked: !alreadyLiked, likesCount: updated.likes.length };
+};
+
+export const summarizePost = async ({ postId, forceRefresh = false }) => {
+  if (!mongoose.Types.ObjectId.isValid(postId)) throw new ApiError(400, "Invalid post ID");
+
+  // .lean() — this is a read-then-cache flow, not a document we mutate via
+  // .save() (partial-select + .save() would re-validate unselected required
+  // fields like `author` and fail); the write below goes through
+  // findByIdAndUpdate instead.
+  const post = await Post.findById(postId).select("caption postType aiSummary").lean();
+  if (!post) throw new ApiError(404, "Post not found");
+
+  if (post.postType !== "note") {
+    throw new ApiError(400, "AI summarization is only available for notes");
+  }
+
+  if (post.caption.trim().length < MIN_SUMMARIZABLE_LENGTH) {
+    throw new ApiError(400, "This note is too short to summarize");
+  }
+
+  const isCacheFresh =
+    post.aiSummary?.generatedAt &&
+    Date.now() - new Date(post.aiSummary.generatedAt).getTime() < AI_SUMMARY_TTL_MS;
+
+  if (isCacheFresh && !forceRefresh) {
+    return { ...post.aiSummary, cached: true };
+  }
+
+  const generated = await generateStudySummary(post.caption);
+  const aiSummary = { ...generated, generatedAt: new Date() };
+
+  await Post.findByIdAndUpdate(postId, { $set: { aiSummary } });
+
+  return { ...aiSummary, cached: false };
 };
 
 export const deletePost = async ({ postId, userId, userRole }) => {

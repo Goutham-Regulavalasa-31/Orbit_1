@@ -6,6 +6,7 @@ import {
   getFeed,
   getPostById,
   toggleLike,
+  summarizePost,
   deletePost,
 } from "../controllers/post.controller.js";
 
@@ -21,6 +22,7 @@ router.post("/", upload.array("media", 5), validateFileSizes, createPost);
 router.get("/feed", getFeed);
 router.get("/:id", getPostById);
 router.patch("/:id/like", toggleLike);
+router.post("/:id/summarize", summarizePost);
 router.delete("/:id", deletePost);
 
 // CRITICAL FIX: Mount the comment routes underneath the posts endpoint!

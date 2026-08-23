@@ -75,3 +75,19 @@ export const fetchPostById = async (postId) => {
   const { data } = await axiosInstance.get(`/posts/${postId}`);
   return data.data;
 };
+
+/**
+ * Generates (or fetches the cached) AI study summary for a note post.
+ *
+ * @param {string} postId
+ * @param {{ refresh?: boolean }} [options]
+ * @returns {Promise<{ summary: string, keyPoints: string[], studyQuestions: string[], generatedAt: string, cached: boolean }>}
+ */
+export const summarizePost = async (postId, { refresh = false } = {}) => {
+  // No request body — express.json()'s strict mode rejects a literal `null`
+  // payload, so the config's `data` is omitted entirely rather than passed.
+  const { data } = await axiosInstance.post(`/posts/${postId}/summarize`, undefined, {
+    params: refresh ? { refresh: true } : undefined,
+  });
+  return data.data;
+};

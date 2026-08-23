@@ -11,6 +11,7 @@ import {
   BookOpen,
   HelpCircle,
   MessageSquare,
+  Sparkles,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import useToggleLike from "@/hooks/useToggleLike";
@@ -21,6 +22,10 @@ import { useQueryClient } from "@tanstack/react-query";
 // IMPORT V3 REAL-TIME COMPONENTS
 import usePostRoom from "@/hooks/usePostRoom";
 import CommentSection from "@/components/comments/CommentSection";
+
+// V5: AI notes summarization
+import useSummarizePost from "@/hooks/useSummarizePost";
+import AiSummaryCard from "@/components/posts/AiSummaryCard";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const formatRelativeTime = (isoString) => {
@@ -103,8 +108,15 @@ const PostCard = ({ post }) => {
   const [copied, setCopied] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   const { mutate: toggleLike, isPending: isLiking } = useToggleLike();
+  const {
+    mutate: summarize,
+    data: summaryData,
+    isPending: isSummarizing,
+    isError: isSummarizeError,
+  } = useSummarizePost(post._id);
 
   // FIX: Force every post to join its real-time socket room immediately
   usePostRoom(post._id);
@@ -143,6 +155,16 @@ const PostCard = ({ post }) => {
       queryClient.invalidateQueries({ queryKey: ["posts", "feed"] });
     } catch {}
   }, [post._id, queryClient]);
+
+  const handleToggleSummary = useCallback(() => {
+    setShowSummary((prev) => {
+      const next = !prev;
+      if (next && !summaryData) summarize();
+      return next;
+    });
+  }, [summaryData, summarize]);
+
+  const handleRegenerateSummary = useCallback(() => summarize({ refresh: true }), [summarize]);
 
   if (deleted) return null;
 
@@ -223,12 +245,40 @@ const PostCard = ({ post }) => {
           <span>{post.commentsCount}</span>
         </button>
 
+        {post.postType === "note" && (
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={handleToggleSummary}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+              showSummary ? "bg-violet-500/10 text-violet-300" : "text-violet-400/80 hover:bg-violet-500/10 hover:text-violet-300"
+            }`}
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>{showSummary ? "Hide Summary" : "Summarize with AI"}</span>
+          </motion.button>
+        )}
+
         <div className="flex-1" />
         <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-200 hover:bg-muted/50 hover:text-foreground">
           <Share2 className="h-3.5 w-3.5" />
           {copied ? <span className="text-green-400">Copied!</span> : <span>Share</span>}
         </motion.button>
       </div>
+
+      {/* V5: AI study summary panel */}
+      <AnimatePresence>
+        {showSummary && (
+          <div className="px-4 pb-4">
+            <AiSummaryCard
+              data={summaryData}
+              isLoading={isSummarizing}
+              isError={isSummarizeError}
+              onRegenerate={handleRegenerateSummary}
+              onClose={() => setShowSummary(false)}
+            />
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* FIX: Actually render the nested comment UI */}
       <AnimatePresence>
