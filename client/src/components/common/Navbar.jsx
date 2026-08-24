@@ -5,6 +5,7 @@ import useAuthStore from "@/store/useAuthStore";
 import { useLogout } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import MessageBell from "@/components/messages/MessageBell";
 
 /**
  * Top navigation bar for authenticated pages.
@@ -48,6 +49,9 @@ const Navbar = () => {
         {/* ── Right side: user info + logout ────────────────────────── */}
         {user && (
           <div className="flex items-center gap-3">
+            {/* Message bell */}
+            <MessageBell />
+
             {/* Notification bell */}
             <NotificationBell />
 

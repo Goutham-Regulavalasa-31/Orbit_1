@@ -1,13 +1,14 @@
 import { useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, GraduationCap, Loader2, Orbit } from "lucide-react";
+import { ArrowLeft, Calendar, GraduationCap, Loader2, Orbit, MessageSquare } from "lucide-react";
 import Navbar from "@/components/common/Navbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PostCard from "@/components/posts/PostCard";
 import PostCardSkeleton from "@/components/posts/PostCardSkeleton";
 import useUserProfile from "@/hooks/useUserProfile";
 import useUserPosts from "@/hooks/useUserPosts";
+import useAuthStore from "@/store/useAuthStore";
 
 const ROLE_LABEL = {
   student: "Student",
@@ -48,6 +49,7 @@ const ProfileError = () => (
 const ProfilePage = () => {
   const { userId } = useParams();
   const loaderRef = useRef(null);
+  const currentUserId = useAuthStore((s) => s.user?._id);
 
   const { profile, isLoading: isProfileLoading, isError: isProfileError } = useUserProfile(userId);
   const {
@@ -107,11 +109,22 @@ const ProfilePage = () => {
                 <AvatarFallback className="bg-primary/15 text-xl font-bold text-primary">{initials}</AvatarFallback>
               </Avatar>
 
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-foreground">{profile.name}</h1>
-                <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                  {ROLE_LABEL[profile.role] ?? profile.role}
-                </span>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-xl font-bold tracking-tight text-foreground">{profile.name}</h1>
+                  <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                    {ROLE_LABEL[profile.role] ?? profile.role}
+                  </span>
+                </div>
+                {currentUserId && currentUserId !== profile._id && (
+                  <Link
+                    to={`/messages/${profile._id}`}
+                    className="flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    Message
+                  </Link>
+                )}
               </div>
 
               {profile.bio && (
