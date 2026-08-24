@@ -22,7 +22,7 @@ const MAX_FEED_LIMIT   = 20;
  *  - media    {File[]}  optional, max 5 (images + PDFs)
  */
 export const createPost = asyncHandler(async (req, res) => {
-  const { caption, postType, tags } = req.body;
+  const { caption, postType, tags, clubId } = req.body;
 
   // ── Input validation ─────────────────────────────────────────────────────
   if (!caption || caption.trim().length === 0) {
@@ -70,6 +70,7 @@ export const createPost = asyncHandler(async (req, res) => {
     postType: postType ?? "general",
     tags:     parsedTags,
     files:    req.files ?? [],
+    clubId:   clubId || null,
   });
 
   return res

@@ -43,14 +43,15 @@ const bufferToStream = (buffer) => {
  *
  * @param {Buffer} buffer     - The file buffer from multer memoryStorage
  * @param {string} mimetype   - MIME type of the file (e.g. "image/jpeg")
+ * @param {string} [folderOverride] - Use a folder other than the default posts/{images,pdfs} pair (e.g. club covers)
  * @returns {Promise<{ url: string, publicId: string, resourceType: string }>}
  * @throws  Will reject if Cloudinary upload fails
  */
-export const uploadToCloudinary = (buffer, mimetype) => {
+export const uploadToCloudinary = (buffer, mimetype, folderOverride) => {
   const isPdf = mimetype === "application/pdf";
 
   const uploadOptions = {
-    folder: isPdf ? FOLDERS.pdfs : FOLDERS.images,
+    folder: folderOverride ?? (isPdf ? FOLDERS.pdfs : FOLDERS.images),
     resource_type: isPdf ? "raw" : "image",
     // For images: auto-quality + auto-format for optimal delivery
     ...(isPdf

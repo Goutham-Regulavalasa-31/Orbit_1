@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Post } from "../models/Post.model.js";
+import { Club } from "../models/Club.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadToCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import { emitToPost } from "../socket/socket.js";
@@ -29,7 +30,17 @@ const buildEnrichmentPipeline = (userId) => [
   { $project: { likes: 0, __v: 0 } },
 ];
 
-export const createPost = async ({ authorId, caption, postType, tags, files }) => {
+export const createPost = async ({ authorId, caption, postType, tags, files, clubId = null }) => {
+  if (clubId) {
+    if (!mongoose.Types.ObjectId.isValid(clubId)) throw new ApiError(400, "Invalid club ID");
+
+    const club = await Club.findById(clubId).select("members");
+    if (!club) throw new ApiError(404, "Club not found");
+
+    const isMember = club.members.some((id) => id.toString() === authorId);
+    if (!isMember) throw new ApiError(403, "Only club members can post in this club");
+  }
+
   let mediaUrls = [];
 
   if (files && files.length > 0) {
@@ -41,7 +52,7 @@ export const createPost = async ({ authorId, caption, postType, tags, files }) =
     }
   }
 
-  const post = await Post.create({ author: authorId, caption, postType: postType ?? "general", tags: tags ?? [], mediaUrls });
+  const post = await Post.create({ author: authorId, caption, postType: postType ?? "general", tags: tags ?? [], mediaUrls, clubId });
 
   const [enriched] = await Post.aggregate([
     { $match: { _id: post._id } },
@@ -53,10 +64,13 @@ export const createPost = async ({ authorId, caption, postType, tags, files }) =
 
 export const getFeed = async ({ userId, page, limit, postType }) => {
   const skip = (page - 1) * limit;
-  const matchStage = postType ? { $match: { postType } } : { $match: {} };
+  // Global feed is club-post-free — clubId:null also matches pre-V6 posts
+  // that never had the field at all (Mongo's null-equality semantics).
+  const filters = { clubId: null };
+  if (postType) filters.postType = postType;
 
   const pipeline = [
-    matchStage,
+    { $match: filters },
     { $sort: { createdAt: -1, _id: -1 } },
     {
       $facet: {

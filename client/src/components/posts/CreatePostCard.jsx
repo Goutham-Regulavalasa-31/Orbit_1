@@ -53,7 +53,12 @@ const formatBytes = (bytes) => {
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
-const CreatePostCard = () => {
+/**
+ * @param {{ clubId?: string }} [props] - When rendered inside a Club Detail
+ * Page, pass the club's id so the new post is scoped to that club instead of
+ * the global feed (see ClubDetailPage.jsx).
+ */
+const CreatePostCard = ({ clubId = null } = {}) => {
   const user = useAuthStore((s) => s.user);
 
   const [caption, setCaption]       = useState("");
@@ -66,6 +71,7 @@ const CreatePostCard = () => {
   const fileInputRef = useRef(null);
 
   const { mutate: submitPost, isPending } = useCreatePost({
+    clubId,
     onSuccess: () => {
       setCaption("");
       setTags("");
@@ -128,6 +134,7 @@ const CreatePostCard = () => {
     formData.append("caption",  caption.trim());
     formData.append("postType", postType);
     formData.append("tags",     tags.trim());
+    if (clubId) formData.append("clubId", clubId);
     files.forEach(({ file }) => formData.append("media", file));
 
     submitPost(formData);

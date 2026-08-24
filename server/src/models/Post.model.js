@@ -97,6 +97,17 @@ const postSchema = new Schema(
       type: aiSummarySchema,
       default: null,
     },
+
+    // null = a global-feed post. Set = the post belongs to a club and is
+    // excluded from the global feed (see post.service.js's getFeed).
+    // Mongo's equality match on null also matches documents where this
+    // field is simply absent, so pre-V6 posts need no migration.
+    clubId: {
+      type: Schema.Types.ObjectId,
+      ref: "Club",
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true, // createdAt + updatedAt
@@ -109,6 +120,9 @@ postSchema.index({ createdAt: -1, _id: -1 });
 
 // Compound index to support author-filtered feed (profile page, future)
 postSchema.index({ author: 1, createdAt: -1 });
+
+// Compound index to support club-scoped feed pagination
+postSchema.index({ clubId: 1, createdAt: -1 });
 
 // ── Virtual: likesCount (for non-aggregation use cases) ───────────────────────
 postSchema.virtual("likesCount").get(function () {

@@ -5,6 +5,8 @@ import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import ProfilePage from "@/pages/profile/ProfilePage";
+import ClubsDirectoryPage from "@/pages/clubs/ClubsDirectoryPage";
+import ClubDetailPage from "@/pages/clubs/ClubDetailPage";
 import useAuthStore from "@/store/useAuthStore";
 import useSocketStore from "@/store/useSocketStore";
 
@@ -26,6 +28,8 @@ const App = () => {
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile/:userId" element={<ProfilePage />} />
+        <Route path="/clubs" element={<ClubsDirectoryPage />} />
+        <Route path="/clubs/:id" element={<ClubDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

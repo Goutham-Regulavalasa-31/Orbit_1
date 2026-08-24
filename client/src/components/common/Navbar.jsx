@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { LogOut, User, Orbit } from "lucide-react";
+import { LogOut, User, Orbit, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import useAuthStore from "@/store/useAuthStore";
 import { useLogout } from "@/hooks/useAuth";
@@ -34,6 +34,15 @@ const Navbar = () => {
           <span className="text-lg font-bold tracking-tight">
             Orbit
           </span>
+        </Link>
+
+        {/* ── Center: primary nav links ──────────────────────────────── */}
+        <Link
+          to="/clubs"
+          className="hidden items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground sm:flex"
+        >
+          <Users className="h-4 w-4" />
+          Clubs
         </Link>
 
         {/* ── Right side: user info + logout ────────────────────────── */}

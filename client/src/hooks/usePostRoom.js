@@ -2,6 +2,19 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import useSocket from "./useSocket";
 
+/**
+ * Every query-key root that can hold a paginated list of post objects —
+ * see the identical constant (and its rationale) in useToggleLike.js. Kept
+ * as a separate copy here rather than a shared import: this file has no
+ * other dependency on that module, and the two lists are free to diverge
+ * if a future feed type needs different real-time handling.
+ */
+const POST_QUERY_ROOTS = [
+  ["posts", "feed"],
+  ["clubs"],
+  ["users"],
+];
+
 const usePostRoom = (postId) => {
   const { socket, isConnected } = useSocket();
   const queryClient = useQueryClient();
@@ -56,18 +69,24 @@ const usePostRoom = (postId) => {
 
     const onPostLiked = ({ postId: pid, likesCount }) => {
       if (String(pid) !== String(postId)) return;
-      queryClient.setQueriesData({ queryKey: ["posts", "feed"] }, (oldData) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page) => ({
-            ...page,
-            posts: page.posts.map((post) => {
-              if (post._id !== pid) return post;
-              return { ...post, likesCount };
+
+      POST_QUERY_ROOTS.forEach((queryKey) => {
+        queryClient.setQueriesData({ queryKey }, (oldData) => {
+          if (!oldData?.pages) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => {
+              if (!Array.isArray(page?.posts)) return page;
+              return {
+                ...page,
+                posts: page.posts.map((post) => {
+                  if (post._id !== pid) return post;
+                  return { ...post, likesCount };
+                }),
+              };
             }),
-          })),
-        };
+          };
+        });
       });
     };
 
@@ -99,20 +118,32 @@ const updateCommentInTree = (comment, targetId, updates) => {
   return { ...comment, replies: comment.replies.map((r) => updateCommentInTree(r, targetId, updates)) };
 };
 
+/**
+ * Bumps a post's commentsCount by `delta` wherever it appears — the global
+ * feed, any club feed, any profile feed. `setQueriesData` with these broad
+ * roots also touches non-post-list caches sharing the same prefix (club
+ * detail, user profile); the `!oldData?.pages` / `!Array.isArray(page?.posts)`
+ * guards make that a safe no-op rather than a crash.
+ */
 const updateFeedCommentsCount = (queryClient, postId, delta) => {
-   queryClient.setQueriesData({ queryKey: ["posts", "feed"] }, (oldData) => {
-     if (!oldData) return oldData;
-     return {
-       ...oldData,
-       pages: oldData.pages.map((page) => ({
-         ...page,
-         posts: page.posts.map((post) => {
-           if (post._id !== postId) return post;
-           return { ...post, commentsCount: Math.max(0, (post.commentsCount ?? 0) + delta) };
-         }),
-       })),
-     };
-   });
+  POST_QUERY_ROOTS.forEach((queryKey) => {
+    queryClient.setQueriesData({ queryKey }, (oldData) => {
+      if (!oldData?.pages) return oldData;
+      return {
+        ...oldData,
+        pages: oldData.pages.map((page) => {
+          if (!Array.isArray(page?.posts)) return page;
+          return {
+            ...page,
+            posts: page.posts.map((post) => {
+              if (post._id !== postId) return post;
+              return { ...post, commentsCount: Math.max(0, (post.commentsCount ?? 0) + delta) };
+            }),
+          };
+        }),
+      };
+    });
+  });
 };
 
 export default usePostRoom;

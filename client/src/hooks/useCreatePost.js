@@ -4,25 +4,31 @@ import { createPost } from "@/api/posts.api";
 /**
  * useCreatePost — mutation hook for creating a new post.
  *
- * On success, invalidates the feed query cache so new posts appear immediately
- * without requiring a manual refresh.
+ * On success, invalidates the relevant feed query cache so the new post
+ * appears immediately without requiring a manual refresh — the global feed
+ * normally, or a specific club's feed when `clubId` is passed (see
+ * ClubDetailPage, which renders CreatePostCard with clubId set).
  *
  * Usage:
  *   const { mutate, isPending } = useCreatePost();
  *   mutate(formData); // FormData with caption, postType, tags, media files
  */
-const useCreatePost = ({ onSuccess, onError } = {}) => {
+const useCreatePost = ({ clubId, onSuccess, onError } = {}) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: createPost,
 
     onSuccess: (newPost) => {
-      // Invalidate all feed variants (regardless of active postType filter)
-      queryClient.invalidateQueries({
-        queryKey: ["posts", "feed"],
-        exact: false, // invalidate all sub-keys (filter variants)
-      });
+      if (clubId) {
+        queryClient.invalidateQueries({ queryKey: ["clubs", clubId, "posts"] });
+      } else {
+        // Invalidate all feed variants (regardless of active postType filter)
+        queryClient.invalidateQueries({
+          queryKey: ["posts", "feed"],
+          exact: false, // invalidate all sub-keys (filter variants)
+        });
+      }
 
       onSuccess?.(newPost);
     },

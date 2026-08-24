@@ -3,6 +3,7 @@ import authRouter from "./auth.routes.js";
 import postsRouter from "./post.routes.js";
 import userRouter from "./user.routes.js";
 import notificationRouter from "./notification.routes.js";
+import clubRouter from "./club.routes.js";
 
 /**
  * Root API router.
@@ -20,9 +21,9 @@ router.use("/posts", postsRouter);
 
 router.use("/users", userRouter);
 router.use("/notifications", notificationRouter);
+router.use("/clubs", clubRouter);
 
 // Future routers will be mounted here:
-// router.use("/clubs", clubsRouter);
 // router.use("/events", eventsRouter);
 
 export default router;
