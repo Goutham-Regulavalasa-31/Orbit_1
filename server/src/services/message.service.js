@@ -84,6 +84,41 @@ export const sendMessage = async ({ senderId, recipientId, text }) => {
 };
 
 /**
+ * markConversationRead — marks the other user's messages read and clears
+ * the conversation's unread streak for the viewer, if it currently belongs
+ * to them (see the directional design note in Conversation.model.js).
+ *
+ * Shared by getMessages (runs as a side effect of fetching chat history)
+ * and the dedicated PATCH /messages/:userId/read endpoint, which exists
+ * specifically for the case a GET never happens: a message arriving over
+ * the socket while the recipient already has that chat open gets injected
+ * straight into the UI (see useMessageSocket.js), so no GET ever fires to
+ * trigger this side effect — without an explicit call here, the database
+ * would keep disagreeing with what the user has actually already seen.
+ */
+export const markConversationRead = async ({ viewerId, otherUserId }) => {
+  if (!mongoose.Types.ObjectId.isValid(otherUserId)) throw new ApiError(400, "Invalid user ID");
+  if (viewerId === otherUserId) throw new ApiError(400, "Invalid conversation");
+
+  const viewerObjId = new mongoose.Types.ObjectId(viewerId);
+  const otherObjId = new mongoose.Types.ObjectId(otherUserId);
+
+  await Message.updateMany(
+    { sender: otherObjId, recipient: viewerObjId, read: false },
+    { $set: { read: true } }
+  );
+
+  const sortedIds = [viewerId, otherUserId].map(String).sort();
+  const conversation = await Conversation.findOne({
+    participants: sortedIds.map((id) => new mongoose.Types.ObjectId(id)),
+  }).populate("lastMessage", "sender");
+
+  if (conversation?.lastMessage && conversation.lastMessage.sender.toString() !== viewerId) {
+    await Conversation.findByIdAndUpdate(conversation._id, { $set: { unreadCount: 0 } });
+  }
+};
+
+/**
  * getMessages — bidirectional chat history between the viewer and one other
  * user, newest-first pages (client reverses for display — see useMessages.js).
  * Side effect: marks the other user's messages read and clears the
@@ -124,22 +159,7 @@ export const getMessages = async ({ viewerId, otherUserId, page, limit }) => {
   const totalMessages = result?.totalMessages ?? 0;
   const totalPages = Math.ceil(totalMessages / limit);
 
-  // Mark incoming messages as read
-  await Message.updateMany(
-    { sender: otherObjId, recipient: viewerObjId, read: false },
-    { $set: { read: true } }
-  );
-
-  // Clear the unread streak, but only if it currently belongs to the viewer
-  // (i.e. the other user sent the last message — see the directional design note)
-  const sortedIds = [viewerId, otherUserId].map(String).sort();
-  const conversation = await Conversation.findOne({
-    participants: sortedIds.map((id) => new mongoose.Types.ObjectId(id)),
-  }).populate("lastMessage", "sender");
-
-  if (conversation?.lastMessage && conversation.lastMessage.sender.toString() !== viewerId) {
-    await Conversation.findByIdAndUpdate(conversation._id, { $set: { unreadCount: 0 } });
-  }
+  await markConversationRead({ viewerId, otherUserId });
 
   return {
     messages: result?.messages ?? [],

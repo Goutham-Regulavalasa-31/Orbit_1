@@ -69,6 +69,25 @@ export const getMessages = asyncHandler(async (req, res) => {
 });
 
 /**
+ * PATCH /api/v1/messages/:userId/read
+ * Protected — requires valid access token.
+ *
+ * Marks the caller's conversation with :userId as read without fetching
+ * history — for a chat that's already open, where a socket-delivered
+ * message never triggers the GET endpoint's own mark-read side effect.
+ */
+export const markMessagesRead = asyncHandler(async (req, res) => {
+  await messageService.markConversationRead({
+    viewerId: req.user._id.toString(),
+    otherUserId: req.params.userId,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Conversation marked as read"));
+});
+
+/**
  * POST /api/v1/messages/:userId
  * Protected — requires valid access token.
  *

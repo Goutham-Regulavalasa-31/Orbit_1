@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchMessages } from "@/api/messages.api";
 
 /**
@@ -13,13 +13,28 @@ import { fetchMessages } from "@/api/messages.api";
  *   flat  = [newest ... older, older ... oldest]
  *   flat.reverse() = [oldest ... older, older ... newest]  ✓
  *
+ * Fetching a page also marks the other user's messages read and clears this
+ * conversation's unread streak server-side (see message.service.js's
+ * getMessages) — so every successful fetch here invalidates the navbar
+ * badge and inbox list to match, instead of leaving them stuck showing a
+ * stale unread count after the chat has actually been read. This runs
+ * inside queryFn itself (not an `onSuccess` option) because TanStack Query
+ * v5 removed per-query onSuccess/onError callbacks entirely.
+ *
  * @param {string} userId
  * @param {{ limit?: number }} [options]
  */
 const useMessages = (userId, { limit = 20 } = {}) => {
+  const queryClient = useQueryClient();
+
   const query = useInfiniteQuery({
     queryKey: ["messages", userId],
-    queryFn: ({ pageParam }) => fetchMessages({ userId, pageParam, limit }),
+    queryFn: async ({ pageParam }) => {
+      const data = await fetchMessages({ userId, pageParam, limit });
+      queryClient.invalidateQueries({ queryKey: ["messages", "unreadCount"] });
+      queryClient.invalidateQueries({ queryKey: ["messages", "conversations"], exact: false });
+      return data;
+    },
     getNextPageParam: (lastPage) =>
       lastPage.pagination.hasNextPage
         ? lastPage.pagination.currentPage + 1

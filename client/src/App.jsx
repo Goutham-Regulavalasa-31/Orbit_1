@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import LoginPage from "@/pages/auth/LoginPage";
@@ -8,20 +7,13 @@ import ProfilePage from "@/pages/profile/ProfilePage";
 import ClubsDirectoryPage from "@/pages/clubs/ClubsDirectoryPage";
 import ClubDetailPage from "@/pages/clubs/ClubDetailPage";
 import MessagesPage from "@/pages/messages/MessagesPage";
-import useAuthStore from "@/store/useAuthStore";
-import useSocketStore from "@/store/useSocketStore";
 
+// Socket connection lifecycle is owned solely by <SocketBridge> in
+// main.jsx — it used to also be triggered from a useEffect here, which
+// raced with SocketBridge's own effect on every mount/token change and
+// caused the socket to disconnect and immediately reconnect. A message
+// delivered during that reconnect window was silently dropped.
 const App = () => {
-  const accessToken = useAuthStore((s) => s.accessToken);
-  const connectSocket = useSocketStore((s) => s.connect);
-
-  // FIX: Only attempt to connect when a token exists.
-  useEffect(() => {
-    if (accessToken) {
-      connectSocket(accessToken);
-    }
-  }, [accessToken, connectSocket]);
-
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />

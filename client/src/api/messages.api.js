@@ -49,6 +49,18 @@ export const fetchMessages = async ({ userId, pageParam = 1, limit = 20 }) => {
 };
 
 /**
+ * Marks the caller's conversation with a specific user as read, without
+ * fetching history — for a chat that's already open, where a socket-
+ * delivered message never triggers fetchMessages' own mark-read side effect.
+ *
+ * @param {string} userId
+ * @returns {Promise<void>}
+ */
+export const markMessagesRead = async (userId) => {
+  await axiosInstance.patch(`/messages/${userId}/read`);
+};
+
+/**
  * Sends a direct message to a specific user.
  *
  * @param {object} params

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import useSocket from "./useSocket";
+import { markMessagesRead } from "@/api/messages.api";
 
 /**
  * useMessageSocket — live "receive_message" listener.
@@ -15,10 +16,22 @@ import useSocket from "./useSocket";
  * On receipt:
  *  - prepends the message into the sender's open chat thread cache, if it
  *    has ever been fetched this session (mirrors useSendMessage's own
- *    prepend, keeping both sides of a conversation symmetric)
- *  - bumps that conversation's snippet in the inbox list, or invalidates
- *    the whole list if this is a brand-new conversation not yet cached
- *  - increments the navbar unread badge
+ *    prepend, keeping both sides of a conversation symmetric) — this stays
+ *    hand-rolled because it's purely additive UI state, not a source of
+ *    truth the server needs to be asked about.
+ *  - invalidates the inbox list unconditionally, so its lastMessage
+ *    snippet and ordering are refetched from the server rather than
+ *    hand-patched client-side.
+ *  - branches on whether the recipient is already looking at this exact
+ *    conversation (comparing the current route to /messages/<senderId>):
+ *      - not viewing it → invalidate the navbar badge, pulling the real
+ *        unread count from the database.
+ *      - actively viewing it → the message is already visible on screen
+ *        (via the prepend above), but the *database* still has it as
+ *        unread — fetchMessages' mark-read side effect never runs here
+ *        because no GET fires while the chat is already open and cached.
+ *        Call the dedicated mark-read endpoint instead, so the DB doesn't
+ *        keep disagreeing with what the user has actually already seen.
  */
 const useMessageSocket = () => {
   const { socket, isConnected } = useSocket();
@@ -29,6 +42,7 @@ const useMessageSocket = () => {
 
     const onReceiveMessage = (message) => {
       const senderId = message.sender._id;
+      const isActiveChat = window.location.pathname === "/messages/" + senderId;
 
       queryClient.setQueryData(["messages", senderId], (oldData) => {
         if (!oldData) return oldData;
@@ -41,27 +55,16 @@ const useMessageSocket = () => {
         };
       });
 
-      let matchedExistingConversation = false;
-      queryClient.setQueryData(["messages", "conversations"], (oldData) => {
-        if (!oldData) return oldData;
-        const updatedPages = oldData.pages.map((page) => ({
-          ...page,
-          conversations: page.conversations.map((c) => {
-            if (c.otherParticipant._id !== senderId) return c;
-            matchedExistingConversation = true;
-            return { ...c, lastMessage: message, unreadCount: c.unreadCount + 1, updatedAt: message.createdAt };
-          }),
-        }));
-        return { ...oldData, pages: updatedPages };
-      });
+      queryClient.invalidateQueries({ queryKey: ["messages", "conversations"], exact: false });
 
-      if (!matchedExistingConversation) {
-        queryClient.invalidateQueries({ queryKey: ["messages", "conversations"], exact: false });
+      if (isActiveChat) {
+        markMessagesRead(senderId).catch(() => {
+          // Best-effort — a missed mark-read just means the badge briefly
+          // over-counts until the user next leaves and reopens this chat.
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["messages", "unreadCount"] });
       }
-
-      queryClient.setQueryData(["messages", "unreadCount"], (oldData) => ({
-        unreadCount: (oldData?.unreadCount ?? 0) + 1,
-      }));
     };
 
     socket.on("receive_message", onReceiveMessage);

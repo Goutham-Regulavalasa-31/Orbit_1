@@ -4,6 +4,7 @@ import {
   getConversations,
   getUnreadMessagesCount,
   getMessages,
+  markMessagesRead,
   sendMessage,
 } from "../controllers/message.controller.js";
 
@@ -17,6 +18,7 @@ router.use(verifyJWT);
 router.get("/conversations", getConversations);
 router.get("/unread-count", getUnreadMessagesCount);
 router.get("/:userId", getMessages);
+router.patch("/:userId/read", markMessagesRead);
 router.post("/:userId", sendMessage);
 
 export default router;
