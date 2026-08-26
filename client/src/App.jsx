@@ -7,6 +7,8 @@ import ProfilePage from "@/pages/profile/ProfilePage";
 import ClubsDirectoryPage from "@/pages/clubs/ClubsDirectoryPage";
 import ClubDetailPage from "@/pages/clubs/ClubDetailPage";
 import MessagesPage from "@/pages/messages/MessagesPage";
+import EventsHubPage from "@/pages/events/EventsHubPage";
+import EventDetailPage from "@/pages/events/EventDetailPage";
 
 // Socket connection lifecycle is owned solely by <SocketBridge> in
 // main.jsx — it used to also be triggered from a useEffect here, which
@@ -25,6 +27,8 @@ const App = () => {
         <Route path="/clubs/:id" element={<ClubDetailPage />} />
         <Route path="/messages" element={<MessagesPage />} />
         <Route path="/messages/:userId" element={<MessagesPage />} />
+        <Route path="/events" element={<EventsHubPage />} />
+        <Route path="/events/:id" element={<EventDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

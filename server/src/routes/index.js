@@ -5,6 +5,7 @@ import userRouter from "./user.routes.js";
 import notificationRouter from "./notification.routes.js";
 import clubRouter from "./club.routes.js";
 import messageRouter from "./message.routes.js";
+import eventRouter from "./event.routes.js";
 
 /**
  * Root API router.
@@ -24,8 +25,6 @@ router.use("/users", userRouter);
 router.use("/notifications", notificationRouter);
 router.use("/clubs", clubRouter);
 router.use("/messages", messageRouter);
-
-// Future routers will be mounted here:
-// router.use("/events", eventsRouter);
+router.use("/events", eventRouter);
 
 export default router;
