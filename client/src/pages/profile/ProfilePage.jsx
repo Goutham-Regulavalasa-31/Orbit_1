@@ -1,8 +1,7 @@
 import { useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, GraduationCap, Loader2, Orbit, MessageSquare } from "lucide-react";
-import Navbar from "@/components/common/Navbar";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PostCard from "@/components/posts/PostCard";
 import PostCardSkeleton from "@/components/posts/PostCardSkeleton";
@@ -21,12 +20,12 @@ const formatJoinDate = (isoString) =>
 
 // ── Header skeleton ────────────────────────────────────────────────────────────
 const ProfileHeaderSkeleton = () => (
-  <div className="animate-pulse rounded-2xl border border-border/40 bg-card/30 p-6">
+  <div className="animate-pulse rounded-xl border border-border bg-card p-6">
     <div className="flex items-center gap-4">
-      <div className="h-20 w-20 shrink-0 rounded-full bg-muted/40" />
+      <div className="h-20 w-20 shrink-0 rounded-full bg-muted" />
       <div className="flex-1 space-y-2">
-        <div className="h-5 w-40 rounded bg-muted/40" />
-        <div className="h-3 w-24 rounded bg-muted/40" />
+        <div className="h-5 w-40 rounded bg-muted" />
+        <div className="h-3 w-24 rounded bg-muted" />
       </div>
     </div>
   </div>
@@ -34,11 +33,11 @@ const ProfileHeaderSkeleton = () => (
 
 // ── Error state ───────────────────────────────────────────────────────────────
 const ProfileError = () => (
-  <div className="flex flex-col items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/5 py-16 text-center">
+  <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-center">
     <p className="text-sm text-muted-foreground">This profile couldn&apos;t be found.</p>
     <Link
       to="/dashboard"
-      className="flex items-center gap-1.5 rounded-lg border border-border/40 px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted/50"
+      className="flex items-center gap-1.5 rounded-lg border border-border px-4 py-2 text-xs font-medium text-foreground transition-colors hover:bg-muted"
     >
       <ArrowLeft className="h-3.5 w-3.5" />
       Back to feed
@@ -86,71 +85,62 @@ const ProfilePage = () => {
     .slice(0, 2) ?? "?";
 
   return (
-    <div className="min-h-screen">
-      <Navbar />
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+      {isProfileLoading && <ProfileHeaderSkeleton />}
 
-      <main className="container mx-auto max-w-3xl px-6 py-10">
-        {isProfileLoading && <ProfileHeaderSkeleton />}
+      {isProfileError && !isProfileLoading && <ProfileError />}
 
-        {isProfileError && !isProfileLoading && <ProfileError />}
+      {!isProfileLoading && !isProfileError && profile && (
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <div className="h-16 bg-muted" />
 
-        {!isProfileLoading && !isProfileError && profile && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="overflow-hidden rounded-2xl border border-border/40 bg-card/35 backdrop-blur-sm"
-          >
-            <div className="h-20 bg-gradient-to-br from-primary/25 via-primary/10 to-transparent" />
+          <div className="px-6 pb-6">
+            <Avatar className="-mt-10 h-20 w-20 ring-4 ring-background">
+              <AvatarImage src={profile.avatar} alt={profile.name} />
+              <AvatarFallback className="bg-primary/15 text-xl font-bold text-primary">{initials}</AvatarFallback>
+            </Avatar>
 
-            <div className="px-6 pb-6">
-              <Avatar className="-mt-10 h-20 w-20 ring-4 ring-background">
-                <AvatarImage src={profile.avatar} alt={profile.name} />
-                <AvatarFallback className="bg-primary/15 text-xl font-bold text-primary">{initials}</AvatarFallback>
-              </Avatar>
-
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-xl font-bold tracking-tight text-foreground">{profile.name}</h1>
-                  <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                    {ROLE_LABEL[profile.role] ?? profile.role}
-                  </span>
-                </div>
-                {currentUserId && currentUserId !== profile._id && (
-                  <Link
-                    to={`/messages/${profile._id}`}
-                    className="flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground transition-all duration-200 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20"
-                  >
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-semibold tracking-tight text-foreground">{profile.name}</h1>
+                <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                  {ROLE_LABEL[profile.role] ?? profile.role}
+                </span>
+              </div>
+              {currentUserId && currentUserId !== profile._id && (
+                <Button asChild size="sm" className="gap-1.5">
+                  <Link to={`/messages/${profile._id}`}>
                     <MessageSquare className="h-3.5 w-3.5" />
                     Message
                   </Link>
-                )}
-              </div>
-
-              {profile.bio && (
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-foreground/80">{profile.bio}</p>
+                </Button>
               )}
-
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
-                {profile.department && (
-                  <span className="flex items-center gap-1.5">
-                    <GraduationCap className="h-3.5 w-3.5" />
-                    {profile.department}
-                  </span>
-                )}
-                <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  Joined {formatJoinDate(profile.createdAt)}
-                </span>
-              </div>
-
-              <div className="mt-4 flex items-center gap-1.5 border-t border-border/25 pt-4 text-sm">
-                <span className="font-bold text-foreground">{profile.postsCount}</span>
-                <span className="text-muted-foreground">{profile.postsCount === 1 ? "post" : "posts"}</span>
-              </div>
             </div>
-          </motion.div>
-        )}
+
+            {profile.bio && (
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-foreground/80">{profile.bio}</p>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+              {profile.department && (
+                <span className="flex items-center gap-1.5">
+                  <GraduationCap className="h-3.5 w-3.5" />
+                  {profile.department}
+                </span>
+              )}
+              <span className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5" />
+                Joined {formatJoinDate(profile.createdAt)}
+              </span>
+            </div>
+
+            <div className="mt-4 flex items-center gap-1.5 border-t border-border pt-4 text-sm">
+              <span className="font-semibold text-foreground">{profile.postsCount}</span>
+              <span className="text-muted-foreground">{profile.postsCount === 1 ? "post" : "posts"}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
         {/* ── Post history ─────────────────────────────────────────────────── */}
         {!isProfileError && (
@@ -168,9 +158,9 @@ const ProfilePage = () => {
             )}
 
             {!isPostsLoading && !isPostsError && posts.length === 0 && (
-              <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border/30 bg-card/20 py-14 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
-                  <Orbit className="h-7 w-7 text-primary/60" />
+              <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border py-14 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <Orbit className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <p className="text-sm text-muted-foreground">No posts yet.</p>
               </div>
@@ -190,7 +180,6 @@ const ProfilePage = () => {
             </div>
           </div>
         )}
-      </main>
     </div>
   );
 };

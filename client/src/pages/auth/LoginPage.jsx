@@ -50,33 +50,21 @@ const LoginPage = () => {
     (error ? "Login failed. Please try again." : null);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-12">
-      {/* ── Ambient background glow ──────────────────────────────────── */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-56 left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-primary/6 blur-[120px]" />
-        <div className="absolute -bottom-40 -right-20 h-80 w-80 rounded-full bg-indigo-600/5 blur-3xl" />
-      </div>
-
+    <div className="flex min-h-screen items-center justify-center px-4 py-12">
       <motion.div
-        initial={{ opacity: 0, y: 28 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-md"
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="w-full max-w-md"
       >
         {/* ── Logo + header ─────────────────────────────────────────── */}
         <div className="mb-8 flex flex-col items-center gap-4">
-          <motion.div
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.4, ease: "easeOut" }}
-            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/25 shadow-xl shadow-primary/10"
-          >
-            <Orbit className="h-7 w-7 text-primary" />
-          </motion.div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/25">
+            <Orbit className="h-6 w-6 text-primary" />
+          </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Welcome back to{" "}
-              <span className="text-gradient">Orbit</span>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Welcome back to Orbit
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
               Sign in to your student community account
@@ -84,7 +72,7 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <Card className="glass shadow-2xl shadow-black/30">
+        <Card>
           <CardContent className="pt-6">
             {/* ── Success flash (from register redirect) ────────────── */}
             {successMessage && (
@@ -215,7 +203,7 @@ const LoginPage = () => {
             </form>
           </CardContent>
 
-          <CardFooter className="justify-center border-t border-border/30 py-5">
+          <CardFooter className="justify-center border-t border-border py-5">
             <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{" "}
               <Link
@@ -227,11 +215,6 @@ const LoginPage = () => {
             </p>
           </CardFooter>
         </Card>
-
-        {/* Subtle tagline */}
-        <p className="mt-8 text-center text-xs text-muted-foreground/50">
-          Your campus community, elevated.
-        </p>
       </motion.div>
     </div>
   );

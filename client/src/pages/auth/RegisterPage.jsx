@@ -39,12 +39,6 @@ const PasswordRequirement = ({ met, label }) => (
   </div>
 );
 
-// ── Field row animation variants ──────────────────────────────────────────
-const fieldVariants = {
-  hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
-};
-
 const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -83,32 +77,21 @@ const RegisterPage = () => {
     (error ? "Registration failed. Please try again." : null);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
-      {/* ── Ambient glow ──────────────────────────────────────────────── */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 right-0 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-40 -left-20 h-80 w-80 rounded-full bg-indigo-500/5 blur-3xl" />
-      </div>
-
+    <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <motion.div
-        initial={{ opacity: 0, y: 28 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-lg"
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="w-full max-w-lg"
       >
         {/* ── Logo + header ─────────────────────────────────────────── */}
         <div className="mb-8 flex flex-col items-center gap-4">
-          <motion.div
-            initial={{ scale: 0.7, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.4 }}
-            className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/25 shadow-xl shadow-primary/10"
-          >
-            <Orbit className="h-7 w-7 text-primary" />
-          </motion.div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/25">
+            <Orbit className="h-6 w-6 text-primary" />
+          </div>
           <div className="text-center">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Join <span className="text-gradient">Orbit</span>
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Join Orbit
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground">
               Create your student community account
@@ -116,7 +99,7 @@ const RegisterPage = () => {
           </div>
         </div>
 
-        <Card className="glass shadow-2xl shadow-black/30">
+        <Card>
           <CardContent className="pt-6">
             {/* ── Server error ──────────────────────────────────────── */}
             {serverError && (
@@ -130,21 +113,15 @@ const RegisterPage = () => {
               </motion.div>
             )}
 
-            <motion.form
+            <form
               id="register-form"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                hidden: {},
-                visible: { transition: { staggerChildren: 0.07 } },
-              }}
               onSubmit={handleSubmit(onSubmit)}
               className="space-y-4"
               noValidate
             >
               {/* ── Name + Department ─────────────────────────────── */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <motion.div variants={fieldVariants} className="space-y-1.5">
+                <motion.div className="space-y-1.5">
                   <Label htmlFor="reg-name" className="text-foreground/80">
                     Full name{" "}
                     <span className="text-destructive/70" aria-hidden>*</span>
@@ -167,7 +144,7 @@ const RegisterPage = () => {
                   )}
                 </motion.div>
 
-                <motion.div variants={fieldVariants} className="space-y-1.5">
+                <motion.div className="space-y-1.5">
                   <Label htmlFor="reg-department" className="text-foreground/80">
                     Department{" "}
                     <span className="text-xs font-normal text-muted-foreground">
@@ -184,7 +161,7 @@ const RegisterPage = () => {
               </div>
 
               {/* ── Email ────────────────────────────────────────── */}
-              <motion.div variants={fieldVariants} className="space-y-1.5">
+              <motion.div className="space-y-1.5">
                 <Label htmlFor="reg-email" className="text-foreground/80">
                   Email address{" "}
                   <span className="text-destructive/70" aria-hidden>*</span>
@@ -209,7 +186,7 @@ const RegisterPage = () => {
               </motion.div>
 
               {/* ── Password ─────────────────────────────────────── */}
-              <motion.div variants={fieldVariants} className="space-y-1.5">
+              <motion.div className="space-y-1.5">
                 <Label htmlFor="reg-password" className="text-foreground/80">
                   Password{" "}
                   <span className="text-destructive/70" aria-hidden>*</span>
@@ -278,7 +255,7 @@ const RegisterPage = () => {
               </motion.div>
 
               {/* ── Confirm password ─────────────────────────────── */}
-              <motion.div variants={fieldVariants} className="space-y-1.5">
+              <motion.div className="space-y-1.5">
                 <Label htmlFor="reg-confirm-password" className="text-foreground/80">
                   Confirm password{" "}
                   <span className="text-destructive/70" aria-hidden>*</span>
@@ -319,7 +296,7 @@ const RegisterPage = () => {
               </motion.div>
 
               {/* ── Bio ──────────────────────────────────────────── */}
-              <motion.div variants={fieldVariants} className="space-y-1.5">
+              <motion.div className="space-y-1.5">
                 <Label htmlFor="reg-bio" className="text-foreground/80">
                   Bio{" "}
                   <span className="text-xs font-normal text-muted-foreground">
@@ -349,7 +326,7 @@ const RegisterPage = () => {
               </motion.div>
 
               {/* ── Submit ───────────────────────────────────────── */}
-              <motion.div variants={fieldVariants} className="pt-1">
+              <motion.div className="pt-1">
                 <Button
                   id="register-submit-btn"
                   type="submit"
@@ -370,10 +347,10 @@ const RegisterPage = () => {
                   )}
                 </Button>
               </motion.div>
-            </motion.form>
+            </form>
           </CardContent>
 
-          <CardFooter className="justify-center border-t border-border/30 py-5">
+          <CardFooter className="justify-center border-t border-border py-5">
             <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link

@@ -48,12 +48,6 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    /* Subtle radial gradient for depth */
-    background-image: radial-gradient(
-      ellipse 80% 50% at 50% -10%,
-      hsl(217 91% 15% / 0.35) 0%,
-      transparent 100%
-    );
     min-height: 100vh;
   }
 
@@ -87,18 +81,8 @@
 }
 
 @layer utilities {
-  /* Glass morphism card utility */
-  .glass {
-    @apply bg-card/40 backdrop-blur-xl border border-border/50;
-  }
-
-  /* Gradient text utility */
-  .text-gradient {
-    @apply bg-gradient-to-r from-primary to-indigo-400 bg-clip-text text-transparent;
-  }
-
-  /* Glow shadow utility */
-  .shadow-glow {
-    box-shadow: 0 0 40px hsl(var(--primary) / 0.15);
+  /* Flat elevated surface, used sparingly for panels that sit above the page background */
+  .surface-raised {
+    @apply bg-card border border-border;
   }
 }

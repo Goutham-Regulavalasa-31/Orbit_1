@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Event } from "../models/Event.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
+import { emitToEvent } from "../socket/socket.js";
 
 const EVENT_COVER_FOLDER = "orbit/events/covers";
 const PUBLIC_PROJECTION = { _id: 1, name: 1, avatar: 1, department: 1, role: 1 };
@@ -120,5 +121,19 @@ export const toggleRSVP = async ({ eventId, userId }) => {
     { new: true, select: "attendees" }
   );
 
-  return { attending: !isAttending, attendeesCount: updated.attendees.length };
+  const attending = !isAttending;
+  const attendeesCount = updated.attendees.length;
+
+  // Broadcast to everyone currently viewing this event (its detail page or
+  // its card in the /events grid) so their RSVP count/state updates live
+  // instead of going stale until a hard refresh. Wrapped defensively —
+  // Socket.io may not be initialized in test environments, and a broadcast
+  // failure here must never fail the RSVP itself.
+  try {
+    emitToEvent(eventId, "event_rsvp_updated", { eventId, userId, attending, attendeesCount });
+  } catch {
+    // no-op — see comment above
+  }
+
+  return { attending, attendeesCount };
 };

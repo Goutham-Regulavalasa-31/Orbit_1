@@ -98,6 +98,27 @@ export const initIO = (httpServer) => {
       console.log(`   ↳ left room:   ${room}`);
     });
 
+    // ── join_event: subscribe to an event's real-time room ───────────────
+    // Joined by every rendered EventCard (grid) and the EventDetailPage,
+    // same fan-out pattern as join_post — so an RSVP toggle reaches
+    // whoever currently has that event on screen, wherever it's rendered.
+    socket.on("join_event", ({ eventId } = {}) => {
+      if (!eventId || typeof eventId !== "string") return;
+
+      const room = `event:${eventId}`;
+      socket.join(room);
+      console.log(`   ↳ joined room: ${room}`);
+    });
+
+    // ── leave_event: unsubscribe from an event's room ────────────────────
+    socket.on("leave_event", ({ eventId } = {}) => {
+      if (!eventId || typeof eventId !== "string") return;
+
+      const room = `event:${eventId}`;
+      socket.leave(room);
+      console.log(`   ↳ left room:   ${room}`);
+    });
+
     // ── disconnect: cleanup (Socket.io handles room removal automatically) ─
     socket.on("disconnect", (reason) => {
       console.log(
@@ -129,6 +150,17 @@ export const getIO = () => {
  */
 export const emitToPost = (postId, event, payload) => {
   getIO().to(`post:${postId}`).emit(event, payload);
+};
+
+/**
+ * Convenience: broadcast an event to every socket in an event's room.
+ *
+ * @param {string} eventId
+ * @param {string} event  - e.g. "event_rsvp_updated"
+ * @param {object} payload
+ */
+export const emitToEvent = (eventId, event, payload) => {
+  getIO().to(`event:${eventId}`).emit(event, payload);
 };
 
 /**

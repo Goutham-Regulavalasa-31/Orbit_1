@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Calendar, MapPin, Users, Check } from "lucide-react";
 import useToggleRSVP from "@/hooks/useToggleRSVP";
+import useEventRoom from "@/hooks/useEventRoom";
 
 const formatEventDate = (isoString) => {
   const date = new Date(isoString);
@@ -19,6 +20,7 @@ const formatEventDate = (isoString) => {
  */
 const EventCard = ({ event }) => {
   const { mutate: toggleRSVP, isPending } = useToggleRSVP(event._id);
+  useEventRoom(event._id);
   const { day, month, time } = formatEventDate(event.date);
 
   const handleRSVP = (e) => {
@@ -38,9 +40,9 @@ const EventCard = ({ event }) => {
     >
       <Link
         to={`/events/${event._id}`}
-        className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/35 backdrop-blur-sm transition-all duration-300 hover:border-border/70 hover:bg-card/50 hover:shadow-xl hover:shadow-black/20"
+        className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40"
       >
-        <div className="relative h-32 shrink-0 overflow-hidden">
+        <div className="relative h-28 shrink-0 overflow-hidden">
           {event.coverImage?.url ? (
             <img
               src={event.coverImage.url}
@@ -48,7 +50,7 @@ const EventCard = ({ event }) => {
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="h-full w-full bg-gradient-to-br from-primary/25 via-primary/10 to-transparent" />
+            <div className="h-full w-full bg-muted" />
           )}
 
           <div className="absolute left-2 top-2 flex flex-col items-center rounded-lg bg-black/60 px-2 py-1 backdrop-blur-sm">
@@ -73,7 +75,7 @@ const EventCard = ({ event }) => {
 
           <p className="line-clamp-2 flex-1 text-xs leading-relaxed text-muted-foreground">{event.description}</p>
 
-          <div className="mt-1 flex items-center justify-between border-t border-border/20 pt-2.5">
+          <div className="mt-1 flex items-center justify-between border-t border-border pt-2.5">
             <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <Users className="h-3 w-3" />
               {event.attendeesCount} going

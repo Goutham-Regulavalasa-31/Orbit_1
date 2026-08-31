@@ -62,25 +62,13 @@ const AiThinkingState = () => {
 const AiSummaryCard = ({ data, isLoading, isError, onRegenerate, onClose }) => (
   <motion.div
     initial={{ opacity: 0, height: 0 }}
-    animate={{
-      opacity: 1,
-      height: "auto",
-      boxShadow: [
-        "0 0 0px rgba(167,139,250,0)",
-        "0 0 22px rgba(167,139,250,0.28)",
-        "0 0 0px rgba(167,139,250,0)",
-      ],
-    }}
+    animate={{ opacity: 1, height: "auto" }}
     exit={{ opacity: 0, height: 0 }}
-    transition={{
-      height: { duration: 0.3, ease: "easeInOut" },
-      opacity: { duration: 0.3 },
-      boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-    }}
-    className="overflow-hidden rounded-xl border border-violet-400/30 bg-gradient-to-br from-violet-500/[0.07] via-card/50 to-card/50 backdrop-blur-sm"
+    transition={{ duration: 0.25, ease: "easeInOut" }}
+    className="overflow-hidden rounded-xl border border-l-[3px] border-border border-l-violet-400 bg-card"
   >
     {/* Header */}
-    <div className="flex items-center justify-between border-b border-violet-400/20 px-4 py-2.5">
+    <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
       <div className="flex items-center gap-1.5">
         <Sparkles className="h-3.5 w-3.5 text-violet-400" />
         <span className="text-xs font-semibold text-violet-200">AI Study Summary</span>

@@ -16,9 +16,9 @@ const ClubCard = ({ club }) => (
   >
     <Link
       to={`/clubs/${club._id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/40 bg-card/35 backdrop-blur-sm transition-all duration-300 hover:border-border/70 hover:bg-card/50 hover:shadow-xl hover:shadow-black/20"
+      className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/40"
     >
-      <div className="relative h-28 shrink-0 overflow-hidden">
+      <div className="relative h-24 shrink-0 overflow-hidden">
         {club.coverImage?.url ? (
           <img
             src={club.coverImage.url}
@@ -26,7 +26,7 @@ const ClubCard = ({ club }) => (
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-primary/25 via-primary/10 to-transparent" />
+          <div className="h-full w-full bg-muted" />
         )}
         {club.isCreator && (
           <span className="absolute right-2 top-2 flex items-center gap-1 rounded-md border border-amber-400/30 bg-black/50 px-1.5 py-0.5 text-[9px] font-semibold text-amber-300 backdrop-blur-sm">
@@ -50,7 +50,7 @@ const ClubCard = ({ club }) => (
           </div>
         )}
 
-        <div className="mt-1 flex items-center justify-between border-t border-border/20 pt-2.5">
+        <div className="mt-1 flex items-center justify-between border-t border-border pt-2.5">
           <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Users className="h-3 w-3" />
             {club.membersCount} {club.membersCount === 1 ? "member" : "members"}
