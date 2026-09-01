@@ -8,6 +8,7 @@ import App from "./App.jsx";
 import "./index.css";
 import useAuthStore from "@/store/useAuthStore";
 import useSocketStore from "@/store/useSocketStore";
+import { authService } from "@/services/auth.service";
 
 // ── TanStack Query client ──────────────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -35,8 +36,32 @@ const queryClient = new QueryClient({
 const SocketBridge = () => {
   const accessToken = useAuthStore((s) => s.accessToken);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const setAccessToken = useAuthStore((s) => s.setAccessToken);
   const connect = useSocketStore((s) => s.connect);
   const disconnect = useSocketStore((s) => s.disconnect);
+
+  // On a hard page load, `isAuthenticated`/`user` survive in sessionStorage
+  // but `accessToken` is intentionally not persisted (see useAuthStore) —
+  // it's normally re-acquired by axiosInstance's 401 interceptor. But most
+  // REST routes also accept the short-lived httpOnly accessToken cookie as
+  // a fallback (see verifyJWT), so an ordinary page load's API calls all
+  // succeed without ever 401ing, and the interceptor never runs. That left
+  // accessToken null forever after any reload, and since the socket below
+  // only connects once accessToken is truthy, every real-time feature
+  // (RSVP, likes, messages, notifications) silently never went live until
+  // something unrelated happened to trigger a 401. Proactively refreshing
+  // once here closes that gap.
+  useEffect(() => {
+    if (isAuthenticated && !accessToken) {
+      authService
+        .refreshToken()
+        .then((res) => setAccessToken(res.data.accessToken))
+        .catch(() => {
+          // Refresh cookie missing/expired — ProtectedRoute + the request
+          // interceptor's own refresh-on-401 already handle that case.
+        });
+    }
+  }, [isAuthenticated, accessToken, setAccessToken]);
 
   useEffect(() => {
     if (isAuthenticated && accessToken) {
