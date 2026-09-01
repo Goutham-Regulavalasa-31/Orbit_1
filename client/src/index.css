@@ -3,37 +3,41 @@
 @tailwind utilities;
 
 @layer base {
-  /* ─── Dark-mode-first CSS design tokens ─────────────────────────── */
+  /* ─── Dark-mode-first CSS design tokens ─────────────────────────────
+     "Linear/Vercel" palette: near-black surfaces, razor-thin borders,
+     one vibrant accent. Every surface is a hair lighter than the one
+     below it (background 0% → card 3% → popover 4%) so stacked panels
+     stay legible without ever reaching for a shadow or a gradient. ── */
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 3%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 255 92% 65%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 0 0% 9%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 0 0% 12%;
+    --input: 0 0% 14%;
+    --ring: 255 92% 65%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
   }
 }
 
@@ -84,5 +88,11 @@
   /* Flat elevated surface, used sparingly for panels that sit above the page background */
   .surface-raised {
     @apply bg-card border border-border;
+  }
+
+  /* Soft accent glow — reserve for the one focal element per view (e.g. a
+     primary CTA's focus-visible state), not as a blanket decoration. */
+  .shadow-glow {
+    box-shadow: 0 0 24px hsl(var(--primary) / 0.25);
   }
 }
