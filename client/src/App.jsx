@@ -9,6 +9,7 @@ import AppShell from "@/components/layout/AppShell";
 // bundle upfront. AppShell/ProtectedRoute stay eager — they're needed
 // immediately for every authenticated route, so splitting them would
 // just add a waterfall for no payload savings.
+const LandingPage = lazy(() => import("@/pages/landing/LandingPage"));
 const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
 const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
 const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage"));
@@ -40,6 +41,7 @@ const App = () => {
   return (
     <Suspense fallback={<RouteFallback />}>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route element={<ProtectedRoute />}>

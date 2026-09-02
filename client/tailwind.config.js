@@ -49,6 +49,9 @@ export default {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        // Display serif reserved for the marketing site's headlines — the
+        // app shell itself stays all-Inter for UI density and familiarity.
+        display: ["Fraunces", "Georgia", "serif"],
       },
       keyframes: {
         "fade-in": {
@@ -63,11 +66,21 @@ export default {
           "0%, 100%": { boxShadow: "0 0 0 0 hsl(var(--primary) / 0.2)" },
           "50%": { boxShadow: "0 0 0 8px hsl(var(--primary) / 0)" },
         },
+        "orbit-spin": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "orbit-spin-reverse": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(-360deg)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.4s ease-out",
         "slide-in-right": "slide-in-right 0.3s ease-out",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "orbit-slow": "orbit-spin 26s linear infinite",
+        "orbit-slower": "orbit-spin-reverse 34s linear infinite",
       },
     },
   },

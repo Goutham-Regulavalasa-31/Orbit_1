@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { MotionConfig } from "framer-motion";
 
 import App from "./App.jsx";
 import "./index.css";
@@ -79,14 +80,21 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        {/* SocketBridge must be inside QueryClientProvider but outside App
-            so it survives route changes. */}
-        <SocketBridge />
-        <App />
-        {/* DevTools only included in development builds */}
-        {import.meta.env.DEV && (
-          <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-        )}
+        {/* reducedMotion="user" makes every Framer Motion animation in the
+            app honor prefers-reduced-motion automatically (transform/opacity
+            animations are skipped, instant transitions used instead) — set
+            once here rather than checking useReducedMotion() in every
+            component that animates. */}
+        <MotionConfig reducedMotion="user">
+          {/* SocketBridge must be inside QueryClientProvider but outside App
+              so it survives route changes. */}
+          <SocketBridge />
+          <App />
+          {/* DevTools only included in development builds */}
+          {import.meta.env.DEV && (
+            <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+          )}
+        </MotionConfig>
       </QueryClientProvider>
     </BrowserRouter>
   </StrictMode>
